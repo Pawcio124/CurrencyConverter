@@ -114,4 +114,12 @@ describe('CurrencySelector', () => {
         fireEvent.press(getByText('Close'))
         expect(queryByPlaceholderText('Search currency...')).toBeNull()
     })
+
+    it('should show info if currencies list is empty', () => {
+        const { getByText } = render(
+            <CurrencySelector currencies={[]} selectedCurrency={undefined} onSelect={jest.fn()} />
+        )
+        fireEvent.press(getByText('Select currency'))
+        expect(getByText('No currencies found')).toBeTruthy()
+    })
 })

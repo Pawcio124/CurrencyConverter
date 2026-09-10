@@ -4,6 +4,7 @@ import { Currency } from '../../hooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { styles } from './styles'
 import { CurrencySelectorProps } from './types'
+import { EmptyListInfo } from './components'
 
 export const CurrencySelector = ({
     currencies,
@@ -34,27 +35,34 @@ export const CurrencySelector = ({
         setSearch('')
     }
 
-    const displayText = selectedCurrency ? selectedCurrency.shortCode : 'Select currency'
+    const currencyLabel = selectedCurrency?.shortCode ?? 'Select currency'
+
+    const openModal = () => {
+        setVisible(true)
+    }
+
+    const closeModal = () => {
+        setVisible(false)
+    }
+
+    const renderItem = ({ item }: { item: Currency }) => (
+        <Pressable style={styles.item} onPress={() => handleSelect(item)}>
+            <Text style={styles.code}>{item.shortCode}</Text>
+            <Text>{item.name}</Text>
+        </Pressable>
+    )
+    const keyExtractor = (item: Currency) => String(item.id)
 
     return (
         <>
-            <Pressable
-                style={styles.selector}
-                onPress={() => {
-                    setVisible(true)
-                    setSearch('')
-                }}
-            >
-                <Text numberOfLines={1}>{displayText}</Text>
+            <Pressable style={styles.selector} onPress={openModal}>
+                <Text numberOfLines={1}>{currencyLabel}</Text>
             </Pressable>
 
-            <Modal
-                style={{ paddingTop: top, paddingBottom: bottom }}
-                visible={visible}
-                animationType="slide"
-            >
-                <View style={styles.container}>
+            <Modal visible={visible} animationType="slide" onRequestClose={closeModal}>
+                <View style={[styles.container, { paddingTop: top, paddingBottom: bottom }]}>
                     <TextInput
+                        autoFocus
                         placeholder="Search currency..."
                         value={search}
                         onChangeText={setSearch}
@@ -63,16 +71,12 @@ export const CurrencySelector = ({
 
                     <FlatList
                         data={filteredCurrencies}
-                        keyExtractor={item => String(item.id)}
-                        renderItem={({ item }) => (
-                            <Pressable style={styles.item} onPress={() => handleSelect(item)}>
-                                <Text style={styles.code}>{item.shortCode}</Text>
-                                <Text>{item.name}</Text>
-                            </Pressable>
-                        )}
+                        keyExtractor={keyExtractor}
+                        renderItem={renderItem}
+                        ListEmptyComponent={EmptyListInfo}
                     />
 
-                    <Pressable style={styles.closeButton} onPress={() => setVisible(false)}>
+                    <Pressable style={styles.closeButton} onPress={closeModal}>
                         <Text>Close</Text>
                     </Pressable>
                 </View>
